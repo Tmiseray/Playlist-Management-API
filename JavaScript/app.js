@@ -1,74 +1,12 @@
-const express = require('express');
-const app = express();
+import Song from './Song.js';
+import Library from './Library.js';
+import e from 'express';
+// const express = require('express');
+// const app = express();
 
-class Song {
-    constructor(title, artist, genre) {
-        this.id = Song.idCounter++;
-        this.title = title;
-        this.artist = artist;
-        this.genre = genre;
-    }
+const app = e();
 
-    showDetails() {
-        console.log(`${this.id}. ${this.title}, By: ${this.artist} \nGenre: ${this.genre}`);
-    }
-}
-Song.idCounter = 1;
-
-class Playlist {
-    constructor(name) {
-        this.name = name;
-        this.songs = [];
-    }
-
-    addSong(title, artist, genre) {
-        const song = new Song(title, artist, genre);
-        this.songs.push(song);
-    }
-
-    removeSong(songId) {
-        this.songs = this.songs.filter(song => song.id !== parseInt(songId));
-    }
-
-    isEmpty() {
-        return this.songs.length === 0;
-    }
-
-    displayPlaylist() {
-        if (this.isEmpty()) {
-            console.log('Playlist currently has no songs.');
-        } else {
-            this.songs.forEach(song => {
-                song.showDetails();
-            });
-        }
-    }
-}
-
-class Library {
-    constructor() {
-        this.playlists = {};
-    }
-
-    addPlaylist(name) {
-        const newPlaylist = new Playlist(name);
-        this.playlists[name] = newPlaylist;
-    }
-
-    removePlaylist(name) {
-        delete this.playlists[name];
-    }
-
-    displayLibrary() {
-        if (Object.keys(this.playlists).length === 0) {
-            console.log('Library is currently empty.')
-        } else {
-            Object.values(this.playlists).forEach(playlist => playlist.displayPlaylist());
-        }
-    }
-}
-
-app.use(express.json());
+app.use(e.json());
 
 const library = new Library();
 
@@ -78,6 +16,61 @@ app.get('/', (req, res) => {
     res.status(200).send(welcomeMessage);
 });
 
+// Create Song in Library
+app.post('/library/add-song', (req, res) => {
+    const { title, artist, genre } = req.body;
+
+    if (!title || title.length <= 3) {
+        return res.status(404).send('Song title is required and must be at least 3 characters long.');
+    }
+    if (!artist || artist.length <= 3) {
+        return res.status(404).send('Artist is required and must be at least 3 characters long.');
+    }
+    if (!genre) {
+        return res.status(404).send('Song genre is required.');
+    }
+
+    const song = new Song(title, artist, genre);
+    library.addSongToLibrary(song);
+    console.log(song);
+    res.status(200).send(`Song added to library: ${title}, By: ${artist}, Genre: ${genre}`);
+});
+
+
+// Update Song in Library
+app.put('/library/update-song/:songId', (req, res) => {
+    const { songId } = req.params;
+    const { title, artist, genre } = req.body;
+
+    const song = library.songs.find(song => song.id === parseInt(songId));
+    if (!song) {
+        return res.status(404).send(`Song with ID ${songId} not found.`);
+    }
+
+    library.updateSongInLibrary(songId, title, artist, genre);
+    console.log(song);
+    res.status(200).send(`Song updated: ${song.title}, By: ${song.artist}, Genre: ${song.genre}`);
+});
+
+
+// Remove/Delete Song from Library
+app.delete('/library/:songIdentifier', (req, res) => {
+    const { songIdentifier } = req.params;
+    library.removeSongFromLibrary(songIdentifier);
+    res.status(200).send('Song successfully removed from Library.');
+});
+
+
+// Search/Get Song From Library
+app.get('/library/:songIdentifier', (req, res) => {
+    const { songIdentifier } = req.params;
+    const song = library.getSongByAttribute(songIdentifier);
+    const songDetails = song.showSongDetails();
+    console.log(songDetails);
+    res.status(200).send(`Song Details - ID: ${songDetails.id}, Title: ${songDetails.title}, Artist: ${songDetails.artist}, Genre: ${songDetails.genre}`);
+});
+
+
 // Create New Playlist
 app.post('/create-playlist', (req, res) => {
     console.log('Request body:', req.body);
@@ -85,10 +78,62 @@ app.post('/create-playlist', (req, res) => {
     if (!name) {
         return res.status(400).send('Playlist name is required.');
     }
+    if (library.playlists[name]) { 
+        return res.status(400).send('Playlist with this name already exists.');
+    }
 
-    library.addPlaylist(name);
+    library.addPlaylistToLibrary(name);
+    console.log(`Playlist "${name}" created.`);
     res.status(200).send(`Playlist "${name}" created.`);
 });
+
+// Get Playlist from Library
+app.get('/library/:playlistName', (req, res) => {
+    const { playlistName } = req.params;
+    const playlist = Object.keys(library.playlists).find(playlistName);
+    if (!playlist) {
+        return res.status(404).send(`No playlist named: ${playlistName}`);
+    }
+    console.log(playlist);
+    res.status(200).send(`Displaying Playlist: ${playlistName}`);
+    playlist.displayPlaylist();
+});
+
+
+// Update Playlist in Library
+app.put('/library/:playlistName', (req, res) => {
+    const { playlistName } = req.params;
+    const { newName } = req.body;
+
+    if (!newName) {
+        return res.status(404).send('New playlist name is required.');
+    }
+
+    const playlist = library.playlists[playlistName];
+    if (!playlist) {
+        return res.status(404).send(`No playlist named: ${playlistName}`);
+    }
+
+    library.updatePlaylistInLibrary(playlistName, newName);
+
+    console.log(playlistName, playlist, newName);
+    res.status(200).send(`Playlist "${playlistName}" updated to "${newName}".`);
+});
+
+
+// Delete Playlist from Library
+app.delete('/library/:playlistName', (req, res) => {
+    const { playlistName } = req.params;
+    const playlist = library.playlists[playlistName];
+
+    if (!playlist) {
+        return res.status(404).send(`No playlist named: ${playlistName}`);
+    }
+
+    library.removePlaylistFromLibrary(playlistName);
+    res.status(200).send(`Playlist named "${playlistName}" removed from library.`);
+});
+
 
 // Add New Song to Playlist
 app.post('/:playlistName/add-song', (req, res) => {
@@ -110,9 +155,11 @@ app.post('/:playlistName/add-song', (req, res) => {
         return res.status(404).send('Playlist not found.');
     }
 
-    playlist.addSong(title, artist, genre);
+    playlist.addSongToPlaylist(title, artist, genre);
+    console.log(playlistName, title, artist, genre);
     res.status(200).send(`New song added to playlist "${playlistName}": ${title}, By: ${artist}, Genre: ${genre}`);
 });
+
 
 // Update Song in Playlist
 app.put('/:playlistName/:songId', (req, res) => {
@@ -129,35 +176,44 @@ app.put('/:playlistName/:songId', (req, res) => {
         return res.status(404).send(`Song with ID ${songId} not found.`);
     }
 
-    if (title) song.title = title;
-    if (artist) song.artist = artist;
-    if (genre) song.genre = genre;
-
+    playlist.updateSongInLibrary(songId, title, artist, genre);
+    console.log(songId, title, artist, genre);
     res.status(200).send(`Song updated: ${song.title}, By: ${song.artist}, Genre: ${song.genre}`);
 });
 
-// Remove Song from Playlist
+
+// Remove/Delete Song from Playlist
+app.delete('/:playlistName/:songIdentifier', (req, res) => {
+    const { playlistName, songIdentifier } = req.params;
+    const playlist = library.playlists[playlistName];
+    if (!playlist) {
+        return res.status(404).send(`Playlist "${playlistName}" not found.`);
+    }
+    playlist.removeSongFromPlaylist(songIdentifier);
+    console.log(`Song with ID "${songId}" removed from playlist "${playlistName}".`);
+    res.status(200).send('Song successfully removed from playlist.');
+});
 
 
-
-// Search/Get Song
-
-
-
-// Sort Songs in Playlist by name, artist, genre
-
+// Sort songs in Playlist by song name, genre, and artist
+app.get('/:playlistName/:attribute', (req, res) => {
+    const { playlistName, attribute } = req.params;
+    playlistName.sortSongsInPlaylist(attribute);
+});
 
 
-// Get Playlist from Library
+// Sort songs in Library by song name, genre, and artist
+app.get('/library/:attribute', (req, res) => {
+    const { attribute } = req.params;
+    library.sortLibrary(attribute);
+    res.status(200).send('Library has been sorted successfully.');
+});
 
 
-
-// Update Playlist in Library
-
-
-
-// Delete Playlist from Library
-
+// Display Library
+app.get('/library', (req, res) => {
+    res.status(200).send(library.displayLibrary());
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
