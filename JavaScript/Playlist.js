@@ -10,7 +10,7 @@ class Playlist {
         this.songs.push(song);
     }
 
-    updateSongInPlaylist(songId, title, artist, genre) {
+    updateSongInPlaylist(songId, title=null, artist=null, genre=null) {
         const song = this.songs.find(song => song.id === parseInt(songId));
 
         if (song) {

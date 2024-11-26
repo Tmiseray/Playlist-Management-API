@@ -1,13 +1,10 @@
 import Song from './Song.js';
 import Library from './Library.js';
+import Playlist from './Playlist.js';
 import e from 'express';
-// const express = require('express');
-// const app = express();
 
 const app = e();
-
 app.use(e.json());
-
 const library = new Library();
 
 app.get('/', (req, res) => {
@@ -15,6 +12,7 @@ app.get('/', (req, res) => {
     console.log(welcomeMessage);
     res.status(200).send(welcomeMessage);
 });
+
 
 // Create Song in Library
 app.post('/library/add-song', (req, res) => {
@@ -81,11 +79,12 @@ app.post('/create-playlist', (req, res) => {
     if (library.playlists[name]) { 
         return res.status(400).send('Playlist with this name already exists.');
     }
-
-    library.addPlaylistToLibrary(name);
+    const playlist = new Playlist(name);
+    library.addPlaylistToLibrary(playlist);
     console.log(`Playlist "${name}" created.`);
     res.status(200).send(`Playlist "${name}" created.`);
 });
+
 
 // Get Playlist from Library
 app.get('/library/:playlistName', (req, res) => {
@@ -214,6 +213,7 @@ app.get('/library/:attribute', (req, res) => {
 app.get('/library', (req, res) => {
     res.status(200).send(library.displayLibrary());
 });
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));

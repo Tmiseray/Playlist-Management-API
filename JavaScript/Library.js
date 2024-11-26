@@ -11,10 +11,11 @@ class Library {
         this.songs.push(song);
     }
 
-    addPlaylistToLibrary(name) {
-        if (!this.playlists[name]) {
-            const newPlaylist = new Playlist(name);
-            this.playlists[name] = newPlaylist;
+    addPlaylistToLibrary(playlist) {
+        for (let [name, songs] of Object.entries(playlist)) {
+            if (!this.playlists[name]) {
+                this.playlists[name] = songs;
+            }
         }
         console.log(this.playlists); 
     }
@@ -102,15 +103,26 @@ class Library {
     }
 
     displayLibrary() {
-        console.log("Songs in the Library:");
+        console.log("\nSongs in the Library:");
+        if (this.songs.length === 0) {
+            console.log("Currently no songs in Library.");
+        }
         this.songs.forEach(song => {
-            console.log(`Song: ${song.title} by ${song.artist} (${song.genre})`);
+            console.log(`${song.id}. Song: ${song.title} by ${song.artist} (${song.genre})`);
         });
 
+
         console.log("\nPlaylists:");
-        Object.entries(this.playlists).forEach(([playlistName, playlist]) => {
-            console.log(`Playlist: ${playlistName}`);
-            playlist.displayPlaylist();
+        if (Object.keys(this.playlists).length === 0) {
+            console.log("Currently no playlists in Library.");
+        }
+        Object.entries(this.playlists).forEach(playlist => {
+            for (let [name, songs] of Object.entries(playlist)) {
+                console.log(`Playlist: ${name}`);
+                const playlistDetails = playlist.displayPlaylist();
+                console.log(playlistDetails)
+                return playlistDetails;
+            }
         });
     }
 }
