@@ -1,3 +1,4 @@
+
 class Song {
     constructor(title, artist, genre) {
         this.id = Song.idCounter++;
@@ -7,8 +8,7 @@ class Song {
     }
 
     showSongDetails() {
-        console.log(`${this.id}. ${this.title}, By: ${this.artist} \nGenre: ${this.genre}`);
-        return this.id, this.title, this.artist, this.genre;
+        console.log(`\t${this.id}. ${this.title}, By: ${this.artist} \nGenre: ${this.genre}`);
     }
 }
 Song.idCounter = 1;

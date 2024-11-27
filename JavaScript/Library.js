@@ -1,27 +1,56 @@
+
 import Playlist from "./Playlist.js";
-// import Song from "./Song.js";
 
 class Library {
     constructor() {
         this.playlists = {};
-        this.songs = [];
+        this.songs = {};
     }
 
     addSongToLibrary(song) {
-        this.songs.push(song);
+        if (!this.songs[song.id]) {
+            this.songs[song.id] = song;
+        } else {
+            console.log(`Song with ID ${song.id} already exists in the Library.`);
+        }
     }
 
-    addPlaylistToLibrary(playlist) {
-        for (let [name, songs] of Object.entries(playlist)) {
-            if (!this.playlists[name]) {
-                this.playlists[name] = songs;
-            }
+    addPlaylistToLibrary(playlistName) {
+        if (this.playlists[playlistName]) {
+            console.log(`Playlist "${playlistName}" already exists.`);
+            return;
         }
-        console.log(this.playlists); 
+
+        const newPlaylist = new Playlist(playlistName, this);
+        this.playlists[playlistName] = newPlaylist;
+        console.log(`Playlist "${playlistName}" added successfully.`); 
+    }
+
+    searchSongsInLibrary(searchTerm, attribute = 'title') {
+        let results = [];
+
+        searchTerm = searchTerm.toLowerCase();
+
+        if (attribute === 'id') {
+            results = Object.values(this.songs).filter(song => 
+                song.id === parseInt(searchTerm));
+        } else {
+            results = Object.values(this.songs).filter(song => song[attribute].toLowerCase().includes(searchTerm));
+        }
+
+        if (results.length === 0) {
+            console.log('No songs found for your search criteria.');
+            return [];
+        }
+        return results;
+    }
+
+    getPlaylistFromLibrary(playlistName) {
+        return this.playlists[playlistName] || null;
     }
 
     updateSongInLibrary(songId, title=null, artist=null, genre=null) {
-        const song = this.songs.find(song => song.id === parseInt(songId));
+        const song = this.songs[songId];
 
         if (song) {
             song.title = title || song.title;
@@ -36,94 +65,80 @@ class Library {
             console.log(`Playlist "${oldName}" not found.`);
             return;
         }
-        this.playlists[newName] = playlist;
-        delete this.playlists[oldName]
+        this.playlists[newName].songs = playlist.songs;
+        delete this.playlists[oldName];
     }
 
-    removeSongFromLibrary(songIdentifier) {
-        if (typeof songIdentifier === 'number') {
-            this.songs = this.songs.filter(song => song.id !== songIdentifier);
-        } else if (typeof songIdentifier === 'string') {
-            this.songs = this.songs.filter(song => song.title.toLowerCase() !== songIdentifier.toLowerCase());
+    removeSongFromLibrary(song) {
+        if (this.songs[song[id]]) {
+            delete this.songs[song[id]];
+            console.log(`Song "${song[title]}" successfully removed from Library.`);
         } else {
-            console.log('Invalid identifier. Please provide either a song ID (number) or song title.');
+            console.log(`Song not found.`);
         }
     }
 
-    removePlaylistFromLibrary(name) {
-        delete this.playlists[name];
-    }
-
-    sortPlaylistsInLibrary() {
-        const sortedPlaylists = Object.keys(this.playlists)
-            .sort()
-            .reduce((acc, key) => {
-                acc[key] = this.playlists[key];
-                return acc;
-            }, {});
-        this.playlists = sortedPlaylists;
+    removePlaylistFromLibrary(playlistName) {
+        if (this.playlists[playlistName]) {
+            delete this.playlists[playlistName];
+            console.log(`Playlist "${playlistName}" removed successfully.`);
+        } else {
+            console.log(`Playlist not found.`);
+        }
     }
 
     sortSongsInLibrary(attributes = ['title']) {
-        this.songs.sort((a, b) => {
+        const sortedSongs = Object.values(this.songs).sort((a, b) => {
             for (let attribute of attributes) {
                 if (a[attribute] < b[attribute]) return -1;
                 if (a[attribute] > b[attribute]) return 1;
             }
             return 0;
         });
+
+        this.songs = sortedSongs.reduce((acc, song) => {
+            acc[song.id] = song;
+            return acc;
+        }, {});
     }
+
+    sortPlaylistsInLibrary() {
+        const sortedPlaylists = Object.keys(this.playlists).sort();
+        this.playlists = sortedPlaylists.reduce((acc, playlistName) => {
+            acc[playlistName] = this.playlists[playlistName];
+            return acc;
+        }, {});
+    }
+
 
     sortLibrary(songSortAttributes = ['title']) {
         this.sortPlaylistsInLibrary();
 
-        Object.values(this.playlists).forEach(playlist => {
+        Object.keys(this.playlists).forEach(playlist => {
             playlist.sortSongsInPlaylist(songSortAttributes);
         });
         this.sortSongsInLibrary(songSortAttributes);
     }
 
-    getSongByAttribute(songIdentifier) {
-        let results = [];
-        if (isNaN(songIdentifier)) {
-            results = this.songs.filter(song => song.title.toLowerCase() === songIdentifier.toLowerCase());
-        } else {
-            results = this.songs.filter(song => song.id === parseInt(songIdentifier));
-        }
-
-        if (results.length === 0) {
-            console.log('No songs found for your search criteria.');
-            return null;
-        }
-        return results[0]; 
-    }
-
-    getPlaylistFromLibrary(playlistName) {
-        return this.playlists[playlistName] ? this.playlists[playlistName].songs : [];
-    }
-
     displayLibrary() {
         console.log("\nSongs in the Library:");
-        if (this.songs.length === 0) {
+        if (Object.keys(this.songs).length === 0) {
             console.log("Currently no songs in Library.");
+        } else {
+            Object.values(this.songs).forEach(song => {
+                console.log(`${song.id}. Song: ${song.title} by ${song.artist} (${song.genre})`);
+            });
         }
-        this.songs.forEach(song => {
-            console.log(`${song.id}. Song: ${song.title} by ${song.artist} (${song.genre})`);
-        });
 
-
-        console.log("\nPlaylists:");
+        console.log("\nPlaylists in Library:");
         if (Object.keys(this.playlists).length === 0) {
             console.log("Currently no playlists in Library.");
+        } else {
+            Object.keys(this.playlists).forEach(playlistName => {
+                // console.log(`Playlist: ${playlistName}`);
+                this.playlists[playlistName].displayPlaylist();
+            });
         }
-        Object.entries(this.playlists).forEach(playlist => {
-            for (let [name, songs] of Object.entries(playlist)) {
-                console.log(`Playlist: ${name}`);
-                const playlistDetails = playlist.displayPlaylist();
-                console.log(playlistDetails)
-                return playlistDetails;
-            }
-        });
     }
 }
 
