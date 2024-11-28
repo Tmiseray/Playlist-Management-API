@@ -8,7 +8,7 @@ class Song {
     }
 
     showSongDetails() {
-        console.log(`\t${this.id}. ${this.title}, By: ${this.artist} \nGenre: ${this.genre}`);
+        console.log(`\t${this.id}. ${this.title}, By: ${this.artist} (Genre: ${this.genre})`);
     }
 }
 Song.idCounter = 1;
