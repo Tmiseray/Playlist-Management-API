@@ -21,7 +21,13 @@ class Playlist:
             print(f'Song "{song.title}" already exists in this playlist.')
 
     def search_songs_in_playlist(self, search_term, attribute='title'):
-        results = [song for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
+        results = []
+        if attribute == 'id':
+            for song in self.songs:
+                if int(search_term) == song.id:
+                    results.append(song)
+        else:
+            results = [song for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
 
         if not results:
             print('No songs found for your search criteria.')
@@ -55,12 +61,14 @@ class Playlist:
         self.songs.sort(key=lambda song: [getattr(song, attr) for attr in attributes])
 
     def display_playlist(self):
+        songs = []
         print(f'Playlist: {self.name}')
         if not self.songs:
             print('\tPlaylist currently has no songs.')
         else:
             for song in self.songs:
-                song.show_song_details()
+                song_data = song.show_song_details()
+                songs.append(song_data)
 
-        return {'name': self.name, 'songs': self.songs}
+        return {'name': self.name, 'songs': songs}
 

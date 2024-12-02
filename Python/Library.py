@@ -22,7 +22,13 @@ class Library:
         print(f'Playlist "{new_playlist.name}" added successfully.')
 
     def search_songs_in_library(self, search_term, attribute='title'):
-        results = [song for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
+        results = []
+        if attribute == 'id':
+            for song in self.songs:
+                if int(search_term) == song.id:
+                    results.append(song)
+        else:
+            results = [song for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
         
         if not results:
             print('No songs found for your search criteria.')
@@ -101,19 +107,24 @@ class Library:
         print('After Sorting:', self.songs)
 
     def display_library(self):
+        songs = []
+        playlists = []
         print("\nSongs in the Library:")
         if not self.songs:
             print("Currently no songs in Library.")
         else:
             for song in self.songs:
-                print(f'{song.id}. Song: {song.title} by {song.artist} ({song.genre})')
+                # print(f'{song.id}. Song: {song.title} by {song.artist} ({song.genre})')
+                song_data = song.show_song_details()
+                songs.append(song_data)
 
         print("\nPlaylists in Library:")
         if not self.playlists:
             print("Currently no playlists in Library.")
         else:
             for playlist in self.playlists:
-                playlist.display_playlist()
+                playlist_data = playlist.display_playlist()
+                playlists.append(playlist_data)
 
-        return {'songs': self.songs, 'playlists': [{'name': p.name, 'songs': p.songs} for p in self.playlists]}
+        return {'songs': songs, 'playlists': playlists}
 

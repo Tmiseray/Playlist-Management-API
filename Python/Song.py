@@ -10,4 +10,5 @@ class Song:
         self.genre = genre
 
     def show_song_details(self):
-        print(f"\t{self.id}. {self.title}, By: {self.artist} (Genre: {self.genre})")
+        # print(f"\t{self.id}. {self.title}, By: {self.artist} (Genre: {self.genre})")
+        return {"id": self.id, "title": self.title, "artist": self.artist, "genre": self.genre}

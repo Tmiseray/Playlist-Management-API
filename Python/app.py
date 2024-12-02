@@ -47,7 +47,7 @@ def update_song_in_library(song_id):
     artist = data.get('artist')
     genre = data.get('genre')
 
-    song = library.search_songs_in_library(str(song_id), 'id')
+    song = library.search_songs_in_library(song_id, 'id')
     if not song:
         return f'Song with ID {song_id} not found.', 404
 
@@ -61,12 +61,12 @@ def update_song_in_library(song_id):
 def remove_song_from_library(attribute, search_term):
     results = library.search_songs_in_library(search_term, attribute)
     if not results:
-        return f'No songs found for {attribute}: "{search_term}"', 404
+        return (f'No songs found for {attribute}: "{search_term}"'), 404
     elif len(results) > 1:
-        return 'Library contains more than 1 song matching the criteria. Please search for the song to retrieve Song ID and try again.', 409
+        return ('Library contains more than 1 song matching the criteria. Please search for the song to retrieve Song ID and try again.'), 409
     else:
         library.remove_song_from_library(results[0])
-        return 'Song successfully removed from Library.', 200
+        return ('Song successfully removed from Library.'), 200
 
 
 # Search/Get Song From Library
@@ -74,7 +74,7 @@ def remove_song_from_library(attribute, search_term):
 def search_song_in_library(attribute, search_term):
     results = library.search_songs_in_library(search_term, attribute)
     if not results:
-        return f'No songs found for {attribute}: "{search_term}"', 404
+        return (f'No songs found for {attribute}: "{search_term}"'), 404
     return jsonify(results), 200
 
 
@@ -85,15 +85,15 @@ def create_playlist():
     name = data.get('name')
 
     if not name:
-        return 'Playlist name is required.', 400
+        return ('Playlist name is required.'), 400
 
     playlist = library.get_playlist_from_library(name)
     if playlist:
-        return 'Playlist with this name already exists.', 400
+        return ('Playlist with this name already exists.'), 400
 
     library.add_playlist_to_library(name)
     print(f'Playlist "{name}" created.')
-    return f'Playlist "{name}" created.', 200
+    return (f'Playlist "{name}" created.'), 200
 
 
 # Update Playlist in Library
@@ -103,16 +103,16 @@ def update_playlist(playlist_name):
     new_name = data.get('newName')
 
     if not new_name:
-        return 'New playlist name is required.', 404
+        return ('New playlist name is required.'), 404
 
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return f'No playlist named: {playlist_name}', 404
+        return (f'No playlist named: {playlist_name}'), 404
 
     updated_playlist = library.update_playlist_in_library(playlist_name, new_name)
     if updated_playlist:
         print(updated_playlist)
-        return f'Playlist "{playlist_name}" updated to "{updated_playlist.name}".', 200
+        return (f'Playlist "{playlist_name}" updated to "{updated_playlist.name}".'), 200
 
 
 # Delete Playlist from Library
@@ -120,10 +120,10 @@ def update_playlist(playlist_name):
 def remove_playlist(playlist_name):
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return f'No playlist named: {playlist_name}', 404
+        return (f'No playlist named: {playlist_name}'), 404
 
     library.remove_playlist_from_library(playlist_name)
-    return f'Playlist named "{playlist_name}" removed from library.', 200
+    return (f'Playlist named "{playlist_name}" removed from library.'), 200
 
 
 # Get Playlist from Library
@@ -131,10 +131,10 @@ def remove_playlist(playlist_name):
 def get_playlist_from_library(playlist_name):
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return f'No playlist named: {playlist_name}', 404
+        return (f'No playlist named: {playlist_name}'), 404
 
     if not isinstance(playlist, Playlist):
-        return f'Playlist is not an instance of Playlist class.', 500
+        return (f'Playlist is not an instance of Playlist class.'), 500
 
     playlist_data = playlist.display_playlist()
     print(playlist_data)
@@ -150,19 +150,19 @@ def add_song_to_playlist(playlist_name):
     genre = data.get('genre')
 
     if not title or len(title) <= 3:
-        return 'Song title is required and must be at least 3 characters long.', 404
+        return ('Song title is required and must be at least 3 characters long.'), 404
     if not artist or len(artist) <= 3:
-        return 'Artist is required and must be at least 3 characters long.', 404
+        return ('Artist is required and must be at least 3 characters long.'), 404
     if not genre:
-        return 'Song genre is required.', 404
+        return ('Song genre is required.'), 404
 
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return 'Playlist not found.', 404
+        return ('Playlist not found.'), 404
 
     playlist.add_song_to_playlist(title, artist, genre)
     print(f'{playlist_name} - {title}, {artist}, {genre}')
-    return f'New song added to playlist "{playlist_name}": {title}, By: {artist}, Genre: {genre}', 200
+    return (f'New song added to playlist "{playlist_name}": {title}, By: {artist}, Genre: {genre}'), 200
 
 
 # Update Song in Playlist
@@ -175,7 +175,7 @@ def update_song_in_playlist(playlist_name, song_id):
 
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return 'Playlist not found.', 404
+        return ('Playlist not found.'), 404
 
     song = playlist.search_songs_in_playlist(song_id, 'id')
     if not song:
@@ -183,7 +183,7 @@ def update_song_in_playlist(playlist_name, song_id):
 
     updated_song = playlist.update_song_in_playlist(song_id, title, artist, genre)
     print(f'{song_id} - {title}, {artist}, {genre}')
-    return f'Song updated: {updated_song.title}, By: {updated_song.artist}, Genre: {updated_song.genre}', 200
+    return (f'Song updated: {updated_song.title}, By: {updated_song.artist}, Genre: {updated_song.genre}'), 200
 
 
 # Remove/Delete Song from Playlist
@@ -191,10 +191,10 @@ def update_song_in_playlist(playlist_name, song_id):
 def remove_song_from_playlist(playlist_name, song_id):
     playlist = library.get_playlist_from_library(playlist_name)
     if not playlist:
-        return f'Playlist "{playlist_name}" not found.', 404
+        return (f'Playlist "{playlist_name}" not found.'), 404
 
     playlist.remove_song_from_playlist(song_id)
-    return 'Song successfully removed from playlist.', 200
+    return ('Song successfully removed from playlist.'), 200
 
 
 # Search/Get Songs in Playlist
@@ -203,11 +203,11 @@ def search_songs_in_playlist(playlist_name, attribute, search_term):
     playlist = library.get_playlist_from_library(playlist_name)
 
     if not playlist:
-        return f'Playlist "{playlist_name}" not found.', 404
+        return (f'Playlist "{playlist_name}" not found.'), 404
 
     results = playlist.search_songs_in_playlist(search_term, attribute)
     if not results:
-        return f'No songs found for {attribute}: "{search_term}" in playlist "{playlist_name}"', 404
+        return (f'No songs found for {attribute}: "{search_term}" in playlist "{playlist_name}"'), 404
 
     return jsonify(results), 200
 
@@ -218,13 +218,13 @@ def sort_songs_in_playlist(playlist_name, attribute):
     playlist = library.get_playlist_from_library(playlist_name)
 
     if not playlist:
-        return f'Playlist "{playlist_name}" not found.', 404
+        return (f'Playlist "{playlist_name}" not found.'), 404
 
     attributes = attribute.split(',')
     playlist.sort_songs_in_playlist(attributes)
 
     playlist_data = playlist.display_playlist()
-    return f'Playlist "{playlist_name}" has been sorted by: {", ".join(attributes)}\n{playlist_data}', 200
+    return (f'Playlist "{playlist_name}" has been sorted by: {", ".join(attributes)}\n{playlist_data}'), 200
 
 
 # Sort songs in Library by song name, genre, and artist
@@ -233,7 +233,7 @@ def sort_songs_in_library(attribute):
     attributes = attribute.split(',')
     library.sort_library(attributes)
     library_data = library.display_library()
-    return f'Library has been sorted by: {", ".join(attributes)}\n{library_data}', 200
+    return (f'Library has been sorted by: {", ".join(attributes)}\n{library_data}'), 200
 
 
 # Display Library
