@@ -97,17 +97,20 @@ Ensure that you have the following tools installed:
         ```
         cd Python
         ```
+
     * Create and activate a virtual environment:
         ```
         python -m venv venv
         source venv/bin/activate
         ```
-        ***On Windows, use***
+        *On Windows, use*
         `venv\Scripts\activate`
+
     * Install the required libraries:
         ```
         pip install flask flask_sqlalchemy flask_marshmallow
         ```
+
     * Run the Flask application:
         ```
         python app.py
@@ -119,10 +122,12 @@ Ensure that you have the following tools installed:
         ```
         cd JavaScript
         ```
+
     * Install the required Node.js dependencies:
         ```
         npm install
         ```
+        
     * Run the Express application:
         ```
         npm start
