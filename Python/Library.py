@@ -75,7 +75,8 @@ class Library:
         song_to_remove = next((s for s in self.songs if s.id == song.id), None)
         if song_to_remove:
             self.songs.remove(song_to_remove)
-            print(f'Song "{song.title}" successfully removed from Library.')
+            print(f'Song "{song_to_remove.title}" successfully removed from Library.')
+            return song_to_remove.title
         else:
             print('Song not found.')
 
@@ -89,7 +90,11 @@ class Library:
             print('Playlist not found.')
 
     def sort_songs_in_library(self, attributes=['title']):
-        self.songs.sort(key=lambda song: [getattr(song, attr) for attr in attributes])
+        if attributes:
+            self.songs.sort(key=lambda song: [getattr(song, attr) for attr in attributes])
+        else:
+            attributes = 'title'
+            self.songs.sort(key=lambda song: [getattr(song, attr) for attr in attributes])
 
     def sort_playlists_in_library(self):
         self.playlists.sort(key=lambda playlist: playlist.name)
@@ -112,18 +117,21 @@ class Library:
         print("\nSongs in the Library:")
         if not self.songs:
             print("Currently no songs in Library.")
+            songs.append("Currently no songs in Library.")
         else:
             for song in self.songs:
-                # print(f'{song.id}. Song: {song.title} by {song.artist} ({song.genre})')
                 song_data = song.show_song_details()
+                print(song_data)
                 songs.append(song_data)
 
         print("\nPlaylists in Library:")
         if not self.playlists:
             print("Currently no playlists in Library.")
+            playlists.append("Currently no playlists in Library.")
         else:
             for playlist in self.playlists:
                 playlist_data = playlist.display_playlist()
+                print(playlist_data)
                 playlists.append(playlist_data)
 
         return {'songs': songs, 'playlists': playlists}

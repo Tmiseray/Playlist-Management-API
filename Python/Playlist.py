@@ -25,9 +25,9 @@ class Playlist:
         if attribute == 'id':
             for song in self.songs:
                 if int(search_term) == song.id:
-                    results.append(song)
+                    results.append(song.show_song_details())
         else:
-            results = [song for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
+            results = [song.show_song_details() for song in self.songs if search_term.lower() in getattr(song, attribute).lower()]
 
         if not results:
             print('No songs found for your search criteria.')
@@ -65,6 +65,7 @@ class Playlist:
         print(f'Playlist: {self.name}')
         if not self.songs:
             print('\tPlaylist currently has no songs.')
+            songs.append('Playlist currently has no songs.')
         else:
             for song in self.songs:
                 song_data = song.show_song_details()
